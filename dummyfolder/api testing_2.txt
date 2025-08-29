@@ -1,0 +1,49 @@
+import requests
+import pandas as pd
+
+
+url = "https://cricbuzz-cricket.p.rapidapi.com/matches/v1/live"
+
+headers = {
+        "x-rapidapi-key": "f0beadeebbmsh58a7273cdf0621bp1187dejsnc7cb81759c22",
+        "x-rapidapi-host": "cricbuzz-cricket.p.rapidapi.com"
+    }
+
+response = requests.get(url, headers=headers)
+
+data = response.json()
+
+matches = []
+
+for type_matches in data.get("typeMatches", []):
+    for series_matches in type_matches.get("seriesMatches", []):
+        series_data =  series_matches.get("seriesAdWrapper", {})
+        series_id = series_data.get("seriesId")
+        series_name = series_data.get("seriesName")
+
+        for match in series_data.get("matches", []):
+            info = match.get("matchInfo", {})
+            match_id = info.get("matchId")
+            match_desc = info.get("matchDesc")
+            match_format = info.get("matchFormat")
+            start_date = info.get("startDate")
+            status = info.get("status")
+            team1 = info.get("team1",{}).get("teamName")
+            team2 = info.get("team2",{}).get("teamName")
+            venue = info.get("venueInfo", {}).get("ground")
+
+            matches.append({
+                    "series_id":series_id,
+                    "series_name": series_name,
+                    "match_id": match_id,
+                    "match_format": match_format,
+                    "team1": team1,
+                    "team2": team2,
+                    "venue":venue,
+
+                    "status": status
+                })
+
+
+df = pd.DataFrame(matches)
+df
